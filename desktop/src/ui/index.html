@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>Where did my time go</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="bar">
+    <div class="bar-in">
+      <h1 class="brand">Where did my time go</h1>
+      <nav class="tabs" aria-label="Views">
+        <button data-view="today" aria-current="page">Day</button>
+        <button data-view="week">Week</button>
+        <button data-view="sort">Sort <span class="count" id="sort-count" hidden></span></button>
+        <button data-view="setup">Setup</button>
+      </nav>
+    </div>
+  </header>
+  <main id="main" tabindex="-1"></main>
+  <div id="tip" role="tooltip" hidden></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
