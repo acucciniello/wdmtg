@@ -95,7 +95,7 @@ function withTip(el, make) {
 }
 
 // ---------- state ----------
-const state = { view: 'today', date: today(), status: null, open: new Set() };
+const state = { view: location.hash === '#setup' ? 'setup' : 'today', date: today(), status: null, open: new Set() };
 const main = document.getElementById('main');
 
 async function setRule(keys, bucket) {

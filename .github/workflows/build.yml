@@ -1,0 +1,93 @@
+name: Build and test
+
+on:
+  push:
+    paths: ['desktop/**', 'ios/**', '.github/workflows/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  desktop-tests:
+    name: Desktop tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - run: npm ci
+      - run: npm test
+
+  mac-app:
+    name: Mac app
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: desktop
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - name: Build the app
+        run: npm run dist -- --mac --arm64 --x64
+      - name: Check the app is signed well enough to launch
+        run: |
+          for app in dist/mac*/WDMTG.app; do
+            echo "== $app"
+            codesign --verify --deep --strict --verbose=2 "$app"
+            ls "$app/Contents/Resources/app.asar.unpacked/node_modules/get-windows/main"
+          done
+      - name: Launch the packaged app and prove it tracks
+        run: |
+          arch=$(uname -m); dir=dist/mac; [ "$arch" = "arm64" ] && dir=dist/mac-arm64
+          WDMTG_SMOKE=8000 "$dir/WDMTG.app/Contents/MacOS/WDMTG" --hidden 2>&1 | tee smoke.log
+          grep -q '^SMOKE ' smoke.log
+          grep '^SMOKE ' smoke.log | sed 's/^SMOKE //' | python3 -c "
+          import json, sys
+          s = json.load(sys.stdin)
+          print(json.dumps(s, indent=2))
+          assert s['tracking']['on'], 'tracker is not running'
+          assert s['segments'] >= 1, 'nothing was recorded'
+          assert s['tracking']['app'] not in (None, 'Unknown'), 'could not see the frontmost app: ' + str(s['tracking'])
+          "
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WDMTG-mac
+          path: desktop/dist/*.dmg
+          if-no-files-found: error
+
+  iphone-app:
+    name: iPhone app
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: ios
+    steps:
+      - uses: actions/checkout@v4
+      - run: xcodebuild -version && swift --version
+      - name: Test the app's logic
+        run: swift test
+      - name: Build the app for the iPhone simulator
+        run: |
+          xcodebuild -project WDMTG.xcodeproj -target WDMTG -configuration Debug \
+            -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO build | tail -40
+          test -d build/Debug-iphonesimulator/WDMTG.app
+          plutil -p build/Debug-iphonesimulator/WDMTG.app/Info.plist | grep -E 'wdmtg|NSAllowsLocalNetworking|NSMotionUsage|NSLocalNetwork|CFBundleIdentifier'

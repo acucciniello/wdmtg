@@ -2,7 +2,7 @@
   "name": "wdmtg-desktop",
   "productName": "WDMTG",
   "version": "0.1.0",
-  "description": "Where Did My Time Go — tracks every second across your Mac and iPhone and shows where the time is lost.",
+  "description": "Where Did My Time Go \u2014 tracks every second across your Mac and iPhone and shows where the time is lost.",
   "private": true,
   "type": "module",
   "main": "src/main.js",
@@ -33,21 +33,24 @@
       "identity": "-",
       "hardenedRuntime": false,
       "extendInfo": {
-        "LSUIElement": false,
         "NSAppleEventsUsageDescription": "WDMTG reads the address of the page you have open in your browser so it can tell YouTube from your deal spreadsheet."
       }
     },
-    "win": {
-      "target": [
-        "nsis"
-      ]
-    }
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "dmg": {
+      "sign": false
+    },
+    "artifactName": "WDMTG-${version}-${os}-${arch}.${ext}"
   },
   "dependencies": {
     "get-windows": "^10.0.0",
     "qrcode": "^1.5.4"
   },
   "devDependencies": {
+    "electron": "^45.5.0",
     "electron-builder": "^26.18.0"
   }
 }

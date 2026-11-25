@@ -156,6 +156,7 @@ export class Engine {
       phoneApp: store.get('phone_app'),
       lastSync: this.lastSync,
       installedAt: store.get('installed_at'),
+      ...this.extraStatus?.(),
     };
   }
 }
