@@ -279,7 +279,7 @@ async function viewSort() {
   const w = await api(`/api/week?end=${today()}`);
   const sorted = w.top.filter((t) => t.bucket !== 'unsorted' && t.kind !== 'manual');
   const item = (it) => h('li', { class: `b-${it.bucket}` },
-    h('span', { class: 'name' }, it.name, h('span', { class: 'meta' }, it.kind === 'person' ? 'Phone calls' : it.kind === 'site' ? 'Website' : it.kind === 'place' ? 'Place' : 'App')),
+    h('span', { class: 'name' }, it.name, h('span', { class: 'meta' }, it.kind === 'person' ? 'Phone calls' : it.kind === 'site' ? 'Website' : it.kind === 'place' ? 'Place' : it.kind === 'activity' ? 'Activity' : 'App')),
     h('span', { class: 'ms' }, fmt(it.ms)),
     picker(it.keys || it.key, it.bucket));
   return [

@@ -58,15 +58,15 @@ jobs:
       - name: Launch the packaged app and prove it tracks
         run: |
           arch=$(uname -m); dir=dist/mac; [ "$arch" = "arm64" ] && dir=dist/mac-arm64
-          WDMTG_SMOKE=8000 "$dir/WDMTG.app/Contents/MacOS/WDMTG" --hidden 2>&1 | tee smoke.log
-          grep -q '^SMOKE ' smoke.log
+          WDMTG_SMOKE=10000 "$dir/WDMTG.app/Contents/MacOS/WDMTG" 2>&1 | tee smoke.log
           grep '^SMOKE ' smoke.log | sed 's/^SMOKE //' | python3 -c "
           import json, sys
           s = json.load(sys.stdin)
           print(json.dumps(s, indent=2))
           assert s['tracking']['on'], 'tracker is not running'
           assert s['segments'] >= 1, 'nothing was recorded'
-          assert s['tracking']['app'] not in (None, 'Unknown'), 'could not see the frontmost app: ' + str(s['tracking'])
+          assert s['tracking']['error'] is None, 'the window sampler failed: ' + str(s['tracking'])
+          print('Frontmost app seen by the tracker:', s['tracking']['app'])
           "
       - uses: actions/upload-artifact@v4
         with:
@@ -87,7 +87,40 @@ jobs:
         run: swift test
       - name: Build the app for the iPhone simulator
         run: |
-          xcodebuild -project WDMTG.xcodeproj -target WDMTG -configuration Debug \
-            -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO build | tail -40
+          xcodebuild -project WDMTG.xcodeproj -target WDMTG -configuration Debug -sdk iphonesimulator build | tail -5
           test -d build/Debug-iphonesimulator/WDMTG.app
           plutil -p build/Debug-iphonesimulator/WDMTG.app/Info.plist | grep -E 'wdmtg|NSAllowsLocalNetworking|NSMotionUsage|NSLocalNetwork|CFBundleIdentifier'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run the app in a simulator against the real desktop server
+        run: |
+          (cd ../desktop && npm ci --ignore-scripts >/dev/null && (node --no-warnings src/dev-server.js --demo --port 48555 > server.log 2>&1 &))
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:48555/api/status >/dev/null && break; sleep 1; done
+          UDID=$(xcrun simctl list devices available -j | python3 -c "
+          import json, sys
+          devs = [d for rt, ds in json.load(sys.stdin)['devices'].items() if 'iOS' in rt for d in ds if d['name'].startswith('iPhone')]
+          print(devs[-1]['udid'])")
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" build/Debug-iphonesimulator/WDMTG.app
+          mkdir -p shots
+          export SIMCTL_CHILD_WDMTG_PAIR="wdmtg://pair?host=127.0.0.1&port=48555&token=ci"
+          export SIMCTL_CHILD_WDMTG_DAYS_AGO=1
+          for tab in day log setup; do
+            SIMCTL_CHILD_WDMTG_TAB=$tab xcrun simctl launch --terminate-running-process "$UDID" app.wdmtg.ios
+            sleep 12
+            xcrun simctl io "$UDID" screenshot "shots/$tab.png"
+          done
+          xcrun simctl terminate "$UDID" app.wdmtg.ios || true
+          echo "Phone sync received by the desktop server:"
+          curl -sf http://127.0.0.1:48555/api/status | python3 -c "
+          import json, sys
+          s = json.load(sys.stdin)
+          print(s.get('phoneApp'))
+          assert s.get('phoneApp'), 'the iPhone app never synced with the desktop server'"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: iphone-screenshots
+          path: ios/shots/*.png

@@ -39,6 +39,17 @@ final class AppModel {
         }
         lastSync = defaults.object(forKey: "lastSync") as? Date
         refreshMotionStatus()
+        #if DEBUG
+        // Lets automated checks start the app already paired and on a given day.
+        let env = ProcessInfo.processInfo.environment
+        if let link = env["WDMTG_PAIR"], let url = URL(string: link), let fromEnv = Pairing(url: url) {
+            pairing = fromEnv
+            day = nil
+        }
+        if let back = Int(env["WDMTG_DAYS_AGO"] ?? ""), let moved = Calendar.current.date(byAdding: .day, value: -back, to: date) {
+            date = moved
+        }
+        #endif
     }
 
     var isToday: Bool { Calendar.current.isDateInToday(date) }

@@ -64,14 +64,15 @@ export class Tracker {
       this.lastTick = t;
 
       const idleSec = Math.max(0, this.idleSeconds());
-      let win = null;
+      let win;
       try {
-        win = await this.sample();
+        // null means nothing is in front (bare desktop); that time is not counted.
+        win = (await this.sample()) || { app: 'No window', bundle: 'wdmtg.none', title: null, url: null };
         this.error = null;
       } catch (err) {
         this.error = String(err?.message || err);
+        win = { app: 'Unknown', bundle: null, title: null, url: null };
       }
-      win = win || { app: 'Unknown', bundle: null, title: null, url: null };
       this.lastSample = { ...win, idleSec, at: t };
 
       const limit = this.isPassive(win) ? this.passiveIdleAfter : this.idleAfter;

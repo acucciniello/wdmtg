@@ -22,14 +22,19 @@ struct WDMTGApp: App {
 struct RootView: View {
     @Environment(AppModel.self) private var model
 
+    @State private var tab = ProcessInfo.processInfo.environment["WDMTG_TAB"] ?? "day"
+
     var body: some View {
-        TabView {
+        TabView(selection: $tab) {
             DayView()
                 .tabItem { Label("Day", systemImage: "sun.max") }
+                .tag("day")
             LogView()
                 .tabItem { Label("Log", systemImage: "record.circle") }
+                .tag("log")
             SetupView()
                 .tabItem { Label("Setup", systemImage: "gearshape") }
+                .tag("setup")
         }
         .tint(Palette.ink)
     }

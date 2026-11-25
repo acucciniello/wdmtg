@@ -144,7 +144,7 @@ export const APP_RULES = [
   ]),
   // --- not counted ---
   ...r('ignore', 'System', [
-    'com.apple.springboard', 'com.apple.loginwindow', 'loginwindow', 'com.apple.screensaver',
+    'wdmtg.none', 'com.apple.springboard', 'com.apple.loginwindow', 'loginwindow', 'com.apple.screensaver',
     'screensaverengine', 'com.apple.screensaver.engine', 'lockapp.exe', 'com.apple.carplay',
     'com.apple.dock', 'com.apple.controlcenter', 'com.apple.notificationcenterui',
     'com.apple.spotlight', 'com.apple.incallservice', 'com.apple.sleeplockscreen', 'com.apple.usernotificationsui',

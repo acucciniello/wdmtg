@@ -111,7 +111,7 @@ export function analyze(timeline, raw, { from, to, days = 1 } = {}) {
   const ranked = rank(real);
   const per = days > 1 ? ' a day' : '';
   const avg = (n) => (days > 1 ? Math.round(n / days) : n);
-  const when = days > 1 ? 'this week' : 'today';
+  const when = days > 1 ? ' this week' : '';
   const amt = (ms) => (days > 1 ? `${fmt(ms / days)} a day` : fmt(ms));
 
   // --- devices: active vs just sitting open ---
@@ -156,7 +156,7 @@ export function analyze(timeline, raw, { from, to, days = 1 } = {}) {
     leaks.push({
       id: 'lost',
       ms: totals.lost,
-      title: `${fmt(totals.lost)} disappeared ${when}`,
+      title: `${fmt(totals.lost)} disappeared${when}`,
       detail: `Mostly ${listNames(lostTop)}.`,
       fix: top
         ? `Start with ${top.name}. A ${top.ms / days > HOUR ? '30' : '15'}-minute daily limit in Screen Time gives you back about ${fmt(Math.max(0, top.ms / days - (top.ms / days > HOUR ? 30 : 15) * MIN))}${per}.`
@@ -244,7 +244,7 @@ export function analyze(timeline, raw, { from, to, days = 1 } = {}) {
     leaks.push({
       id: 'late',
       ms: lateMs,
-      title: `You worked ${fmt(lateMs)} after 8pm ${when}`,
+      title: `You worked ${fmt(lateMs)} after 8pm${when}`,
       detail: 'Work that leaks into the evening is time taken straight from your life.',
       fix: 'Set a hard stop. Anything left goes first on tomorrow\'s list.',
     });
