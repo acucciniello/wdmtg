@@ -319,7 +319,8 @@ async function viewSetup() {
         h('p', null, 'Without this I only know "Chrome", not "Zillow" or "YouTube". Turn on WDMTG in both lists, then quit and reopen the app.'),
         onDesktop && act('Open Screen Recording', 'open-settings', { pane: 'screen' }),
         onDesktop && act('Open Accessibility', 'open-settings', { pane: 'accessibility' }),
-      ]));
+      ],
+      h('p', null, 'The first time you use each browser, macOS asks whether WDMTG may control it. Click Allow. That is how I read the address of the page you are on.')));
 
     const ip = s.iphone;
     const ipOk = ip?.ok && ip.devices?.some((d) => d.intervals > 0);

@@ -87,3 +87,12 @@ test('sampling errors do not stop tracking', async () => {
   assert.equal(r.segs()[0].app, 'Unknown');
   assert.match(r.tracker.error, /no permission/);
 });
+
+test('nothing in front (bare desktop) is recorded but never counted as your time', async () => {
+  const { flatten } = await import('../src/core/timeline.js');
+  const r = rig({ sample: async () => null });
+  await r.run(30);
+  const raw = r.store.range(0, Number.MAX_SAFE_INTEGER);
+  assert.equal(raw[0].app, 'No window');
+  assert.equal(flatten(raw, 0, Number.MAX_SAFE_INTEGER).length, 0);
+});

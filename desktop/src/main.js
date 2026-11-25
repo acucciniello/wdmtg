@@ -88,9 +88,9 @@ function buildTray() {
   return menu;
 }
 
-app.on('second-instance', () => showWindow());
+app.on('second-instance', () => { if (baseUrl) showWindow(); });
 app.on('window-all-closed', () => { /* keep tracking in the background */ });
-app.on('activate', () => showWindow());
+app.on('activate', () => { if (baseUrl) showWindow(); });
 app.on('before-quit', () => { quitting = true; engine?.stop(); });
 
 app.whenReady().then(async () => {
@@ -127,7 +127,7 @@ app.whenReady().then(async () => {
         if (PANES[pane]) shell.openExternal(PANES[pane]);
       },
       'connect-calls': async () => ({ ok: await engine.connectCalls() }),
-      autolaunch: ({ on }) => app.setLoginItemSettings({ openAtLogin: Boolean(on), openAsHidden: true }),
+      autolaunch: ({ on }) => app.setLoginItemSettings({ openAtLogin: Boolean(on), openAsHidden: true, args: ['--hidden'] }),
       pause: ({ paused }) => {
         engine.setPaused(Boolean(paused));
         if (!paused && away) engine.tracker?.stopTimer();
@@ -143,7 +143,8 @@ app.whenReady().then(async () => {
   const menu = buildTray();
   refreshTray = () => tray.setContextMenu(menu());
 
-  const startedHidden = app.getLoginItemSettings().wasOpenedAsHidden || process.argv.includes('--hidden');
+  const login = app.getLoginItemSettings();
+  const startedHidden = login.wasOpenedAtLogin || login.wasOpenedAsHidden || process.argv.includes('--hidden');
   if (!startedHidden) showWindow(firstRun && !demo ? '#setup' : '');
   if (process.env.WDMTG_SMOKE) {
     // Used by automated checks: prove the app boots, tracks and serves, then exit.

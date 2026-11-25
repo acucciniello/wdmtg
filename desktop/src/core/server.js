@@ -2,6 +2,7 @@
 // app syncs with. Requests from this computer are trusted; anything coming
 // over Wi-Fi must carry the pairing token.
 import http from 'node:http';
+import net from 'node:net';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -116,7 +117,11 @@ export function createServer({ engine, uiDir, port = 48321, actions = {}, now = 
       res.end(type === 'application/json' ? JSON.stringify(body) : body);
     };
     try {
-      // A page on another website must not be able to talk to this server.
+      // A page on another website must not be able to talk to this server:
+      // we only answer when addressed by IP or "localhost" (blocks DNS rebinding)
+      // and when the page making the request is our own.
+      const hostname = String(req.headers.host || '').replace(/:\d+$/, '').replace(/^\[|\]$/g, '');
+      if (hostname !== 'localhost' && !net.isIP(hostname)) return send(403, { error: 'forbidden' });
       const origin = req.headers.origin;
       if (origin && new URL(origin).host !== req.headers.host) return send(403, { error: 'forbidden' });
 

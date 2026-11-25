@@ -9,6 +9,7 @@ struct WDMTGApp: App {
         WindowGroup {
             RootView()
                 .environment(model)
+                .task { await model.refresh() }
                 .onOpenURL { url in
                     if let pairing = Pairing(url: url) { model.pair(pairing) }
                 }

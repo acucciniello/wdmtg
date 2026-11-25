@@ -86,7 +86,7 @@ ios/       SwiftUI app. WDMTG/Core is pure logic, tested with `swift test`.
 ```bash
 cd desktop
 npm install
-npm test         # 37 tests
+npm test         # 38 tests
 npm run demo     # dashboard with sample data at http://127.0.0.1:48321
 npm start        # the real app
 npm run dist     # build the .dmg (on a Mac)

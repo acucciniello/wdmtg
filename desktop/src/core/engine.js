@@ -81,7 +81,12 @@ export class Engine {
       }
       try {
         if (this.callKey === null && store.get('calls_connected')) this.callKey = (await fetchCallKey()) || false;
-        const contacts = loadContacts();
+        // Contacts rarely change: re-read them at most once an hour.
+        if (!this.contacts || Date.now() - this.contactsAt > 3600_000) {
+          this.contacts = loadContacts();
+          this.contactsAt = Date.now();
+        }
+        const contacts = this.contacts;
         this.sources.calls = { ...importCalls(store, { key: this.callKey || null, contacts }), contacts: contacts.size, hasKey: Boolean(this.callKey) };
       } catch (err) {
         this.sources.calls = { ok: false, reason: 'error', detail: String(err.message || err) };

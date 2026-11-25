@@ -79,6 +79,11 @@ test('pairing info and desktop actions are only for this computer; other sites a
   assert.deepEqual(await (await s.call('POST', '/api/action', { name: 'ping' })).json(), { pong: true });
   assert.equal((await s.call('POST', '/api/action', { name: 'nope' })).status, 404);
   assert.equal((await s.call('GET', '/api/day', null, { Origin: 'https://evil.example' })).status, 403);
+  // DNS rebinding: a hostile site pointing its own name at this computer is refused.
+  const rebound = await new Promise((resolve) => {
+    http.get({ host: '127.0.0.1', port: s.port, path: '/api/day', headers: { Host: `evil.example:${s.port}` } }, (res) => resolve(res.statusCode));
+  });
+  assert.equal(rebound, 403);
 });
 
 test('requests over the network need the pairing token', async (t) => {
@@ -88,7 +93,7 @@ test('requests over the network need the pairing token', async (t) => {
   const ask = (headers, url = '/api/day') =>
     new Promise((resolve) => {
       const req = new http.IncomingMessage({ remoteAddress: '192.168.1.50' });
-      Object.assign(req, { method: 'GET', url, headers: { host: 'x', ...headers } });
+      Object.assign(req, { method: 'GET', url, headers: { host: '192.168.1.20:48321', ...headers } });
       const res = { writeHead: (status) => (res.status = status), end: () => resolve(res.status) };
       s.app.server.emit('request', req, res);
       req.push(null);
