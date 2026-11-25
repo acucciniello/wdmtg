@@ -22,8 +22,10 @@ struct SetupView: View {
                                     .font(.footnote).foregroundStyle(Palette.ink2)
                                 HStack {
                                     Button("Sync now") { Task { await model.refresh() } }
+                                        .buttonStyle(.bordered)
                                     Spacer()
                                     Button("Disconnect", role: .destructive) { model.unpair() }
+                                        .buttonStyle(.bordered)
                                 }
                                 .padding(.top, 4)
                             } else {
@@ -41,6 +43,7 @@ struct SetupView: View {
                                         model.pair(Pairing(host: host.trimmingCharacters(in: .whitespaces), port: p, token: token.trimmingCharacters(in: .whitespaces)))
                                     }
                                 }
+                                .buttonStyle(.borderedProminent)
                                 .disabled(host.isEmpty || token.isEmpty || Int(port) == nil)
                             }
                         }
@@ -64,6 +67,7 @@ struct SetupView: View {
                             case .none:
                                 Text("Not turned on yet").font(.headline).foregroundStyle(Palette.ink)
                                 Button("Turn on drive tracking") { Task { await model.sync() } }
+                                    .buttonStyle(.borderedProminent)
                             }
                             Text("Your iPhone already records when you are in a car, on its own, for 7 days. This app reads that when you open it. No GPS, no location, no battery cost.")
                                 .font(.footnote).foregroundStyle(Palette.ink2)

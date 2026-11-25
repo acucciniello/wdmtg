@@ -37,6 +37,6 @@ struct RootView: View {
                 .tabItem { Label("Setup", systemImage: "gearshape") }
                 .tag("setup")
         }
-        .tint(Palette.ink)
+        .tint(Palette.color(.busy))
     }
 }

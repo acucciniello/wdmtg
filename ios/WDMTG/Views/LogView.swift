@@ -6,7 +6,7 @@ struct LogView: View {
     @State private var title = ""
 
     private let presets: [(String, Bucket)] = [
-        ("Showing", .money), ("Seller meeting", .money), ("Property walkthrough", .money),
+        ("Showing", .money), ("Seller meeting", .money), ("Walkthrough", .money),
         ("Filming", .money), ("Errands", .busy), ("Meeting", .busy),
         ("Gym", .life), ("Family", .life), ("Meal", .life),
     ]

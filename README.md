@@ -50,6 +50,8 @@ In the Mac app go to **Setup > Your phone** and point your iPhone camera at the 
 
 ## Install the iPhone app (optional, needs Xcode)
 
+<img src="docs/iphone-day.jpg" width="260" alt="The day view on iPhone"> <img src="docs/iphone-log.jpg" width="260" alt="Logging off-screen time on iPhone">
+
 The iPhone app adds drive tracking and one-tap logging of off-screen time. It is not on the App Store, so you install it from your Mac:
 
 1. Install Xcode from the Mac App Store.
